@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Industrial Material Exchange — connecting industrial suppliers and buyers across India.">
+    <title>Industrial Material Exchange</title>
+    <link rel="stylesheet" href="/css/ime.css">
+    <style>
+        /* ── Index-specific layout ─────────────────────────────── */
+        html, body { height: 100%; }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Hero section */
+        .hero {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: var(--space-80) var(--space-24) var(--space-64);
+            background-color: var(--color-canvas);
+        }
+
+        .hero-eyebrow {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--color-muted);
+            margin-bottom: var(--space-24);
+        }
+
+        .hero-headline {
+            font-family: var(--font-display);
+            font-size: clamp(40px, 7vw, 80px);
+            font-weight: 400;
+            line-height: 1.00;
+            letter-spacing: -1.6px;
+            color: var(--color-near-black);
+            max-width: 760px;
+            margin-bottom: var(--space-24);
+        }
+
+        .hero-headline em {
+            font-style: normal;
+            color: var(--color-muted);
+        }
+
+        .hero-subline {
+            font-size: 18px;
+            line-height: 1.5;
+            color: var(--color-slate);
+            max-width: 480px;
+            margin-bottom: var(--space-40);
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--space-20);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Trust strip */
+        .trust-strip {
+            padding: var(--space-64) var(--space-24);
+            text-align: center;
+            border-top: 1px solid var(--color-card-border);
+        }
+
+        .trust-eyebrow {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--color-muted);
+            margin-bottom: var(--space-32);
+        }
+
+        .trust-chips {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: var(--space-12);
+        }
+
+        .trust-chip {
+            padding: 6px 18px;
+            border: 1px solid var(--color-hairline);
+            border-radius: var(--radius-xl);
+            font-size: 13px;
+            color: var(--color-ink);
+            font-weight: 400;
+        }
+
+        /* Feature band */
+        .feature-band {
+            background-color: var(--color-near-black);
+            color: var(--color-canvas);
+            padding: var(--space-64) var(--space-24);
+        }
+
+        .feature-band-inner {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-32);
+        }
+
+        .feature-item {
+            border-top: 1px solid rgba(255,255,255,0.12);
+            padding-top: var(--space-24);
+        }
+
+        .feature-num {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: var(--color-muted);
+            margin-bottom: var(--space-16);
+        }
+
+        .feature-heading {
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 400;
+            letter-spacing: -0.3px;
+            color: var(--color-canvas);
+            margin-bottom: var(--space-10);
+            line-height: 1.2;
+        }
+
+        .feature-body {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.55);
+        }
+
+        /* Footer */
+        .footer {
+            background-color: var(--color-near-black);
+            color: var(--color-canvas);
+            padding: var(--space-40) var(--space-24);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: var(--space-16);
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--space-10);
+        }
+
+        .footer-brand-mark {
+            width: 28px;
+            height: 28px;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer-brand-mark span {
+            font-family: var(--font-display);
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--color-canvas);
+            letter-spacing: -0.2px;
+        }
+
+        .footer-name {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: var(--space-24);
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            font-size: 13px;
+            color: rgba(255,255,255,0.45);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .footer-links a:hover {
+            color: var(--color-canvas);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .feature-band-inner {
+                grid-template-columns: 1fr;
+            }
+
+            .footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .hero-actions .btn-primary {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Announcement bar -->
+<div class="announcement-bar" id="announceBar">
+    Now live — discover material suppliers across Karnataka on the map.
+    <a href="/discover">Explore</a>
+    <button class="bar-close" id="barClose" aria-label="Close announcement">✕</button>
+</div>
+
+<!-- Hero -->
+<section class="hero">
+    <p class="hero-eyebrow">Industrial Material Exchange</p>
+    <h1 class="hero-headline">
+        Trade industrial materials<br><em>without the friction.</em>
+    </h1>
+    <p class="hero-subline">
+        Connect directly with verified industrial organisations. Post supplies, discover demands, and transact — all in one platform.
+    </p>
+    <div class="hero-actions">
+        <a href="/auth/signup" class="btn-primary" id="cta-signup">Register Organisation</a>
+        <a href="/discover" class="btn-secondary" id="cta-discover">Explore the map →</a>
+    </div>
+</section>
+
+<!-- Trust strip -->
+<div class="trust-strip">
+    <p class="trust-eyebrow">Material categories on the platform</p>
+    <div class="trust-chips">
+        <span class="trust-chip">Raw Metal</span>
+        <span class="trust-chip">Timber</span>
+        <span class="trust-chip">Textile</span>
+        <span class="trust-chip">Chemical</span>
+        <span class="trust-chip">Agricultural</span>
+        <span class="trust-chip">Plastic</span>
+        <span class="trust-chip">Electronics</span>
+    </div>
+</div>
+
+<!-- Feature band -->
+<section class="feature-band">
+    <div class="feature-band-inner">
+        <div class="feature-item">
+            <p class="feature-num">01 — Discover</p>
+            <h2 class="feature-heading">Map-based search</h2>
+            <p class="feature-body">Browse live supply listings plotted on an interactive map. Filter by material, category, and distance to find exactly what you need.</p>
+        </div>
+        <div class="feature-item">
+            <p class="feature-num">02 — Supply</p>
+            <h2 class="feature-heading">Post your materials</h2>
+            <p class="feature-body">List surplus or available industrial materials with price, quantity, and delivery radius in under two minutes.</p>
+        </div>
+        <div class="feature-item">
+            <p class="feature-num">03 — Connect</p>
+            <h2 class="feature-heading">Verified organisations</h2>
+            <p class="feature-body">Every account is linked to a real industrial organisation, keeping the marketplace focused and trustworthy.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-brand">
+        <div class="footer-brand-mark"><span>IME</span></div>
+        <span class="footer-name">Industrial Material Exchange</span>
+    </div>
+    <nav class="footer-links">
+        <a href="/discover">Discover</a>
+        <a href="/supply">Supply</a>
+        <a href="/auth/signin">Sign In</a>
+        <a href="/auth/signup">Register</a>
+    </nav>
+</footer>
+
+<script>
+    document.getElementById('barClose').addEventListener('click', function () {
+        document.getElementById('announceBar').style.display = 'none';
+    });
+</script>
+
+</body>
+</html>

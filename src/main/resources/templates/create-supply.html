@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Create Supply - IME')}"></head>
+<body>
+    <div th:replace="~{layout :: navbar}"></div>
+
+    <div class="hero-band">
+        <div class="container" style="max-width: 800px;">
+            <h1 class="display-md">Create Supply</h1>
+            <p class="text-muted mb-4" style="font-size: 18px;">List materials you have available for others.</p>
+        </div>
+    </div>
+
+    <div class="container" style="max-width: 800px; padding-bottom: var(--spacing-section);">
+        <div class="cream-callout-card">
+            <form th:action="@{/supplies/create}" th:object="${itemRequest}" method="post">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl); margin-bottom: var(--spacing-lg);">
+                    <div class="form-group">
+                        <label for="name">Material Name</label>
+                        <input type="text" id="name" th:field="*{name}" class="text-input" required>
+                        <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color: #c5221f; font-size: 12px; margin-top: 4px; display: block;"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" th:field="*{categoryId}" class="text-input" required>
+                            <option value="">Select Category</option>
+                            <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}" style="color: #c5221f; font-size: 12px; margin-top: 4px; display: block;"></span>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: var(--spacing-lg);">
+                    <label for="description">Description</label>
+                    <textarea id="description" th:field="*{description}" class="text-input" style="height: auto; min-height: 100px;" rows="4"></textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl); margin-bottom: var(--spacing-lg);">
+                    <div class="form-group">
+                        <label for="quantity">Quantity Available</label>
+                        <input type="number" step="any" id="quantity" th:field="*{quantity}" class="text-input" required>
+                        <span th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}" style="color: #c5221f; font-size: 12px; margin-top: 4px; display: block;"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="unit">Unit</label>
+                        <select id="unit" th:field="*{unit}" class="text-input" required>
+                            <option value="">Select Unit</option>
+                            <option th:each="u : ${units}" th:value="${u}" th:text="${u}"></option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('unit')}" th:errors="*{unit}" style="color: #c5221f; font-size: 12px; margin-top: 4px; display: block;"></span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl); margin-bottom: var(--spacing-xl);">
+                    <div class="form-group">
+                        <label for="pricePerUnit">Price per Unit (₹)</label>
+                        <input type="number" step="any" id="pricePerUnit" th:field="*{pricePerUnit}" class="text-input" required>
+                        <span th:if="${#fields.hasErrors('pricePerUnit')}" th:errors="*{pricePerUnit}" style="color: #c5221f; font-size: 12px; margin-top: 4px; display: block;"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxDistance">Max Delivery Distance (km)</label>
+                        <input type="number" step="any" id="maxDistance" th:field="*{maxDistance}" class="text-input" required>
+                        <span th:if="${#fields.hasErrors('maxDistance')}" th:errors="*{maxDistance}" style="color: #c5221f; font-size: 12px; margin-top: 4px; display: block;"></span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: var(--spacing-md);">
+                    <button type="submit" class="btn button-primary">List Supply</button>
+                    <a th:href="@{/dashboard}" class="btn button-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

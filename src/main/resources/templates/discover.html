@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Discover Results - IME')}"></head>
+<body>
+    <div th:replace="~{layout :: navbar}"></div>
+
+    <!-- We use a custom full-height grid layout for the map and sidebar -->
+    <div style="display: flex; height: calc(100vh - 65px);">
+        
+        <!-- Left Sidebar: Results List -->
+        <div style="width: 450px; flex-shrink: 0; background-color: var(--colors-surface-soft); border-right: 1px solid var(--colors-hairline); display: flex; flex-direction: column;">
+            
+            <div style="padding: var(--spacing-lg); background-color: var(--colors-canvas); border-bottom: 1px solid var(--colors-hairline);">
+                <a th:href="@{/dashboard}" style="font-size: 14px; margin-bottom: var(--spacing-sm); display: inline-block;">← Back to Dashboard</a>
+                <h1 class="title-lg" style="margin: 0;">Matching Results</h1>
+                <p class="text-muted" style="margin: 4px 0 0 0;">Matches for <span th:text="${sourceType}"></span>: <strong th:text="${sourceItem.name}" style="color: var(--colors-ink);"></strong></p>
+            </div>
+
+            <!-- Scrollable list of matches -->
+            <div style="flex: 1; overflow-y: auto; padding: var(--spacing-lg);">
+                
+                <div th:if="${matches.empty}">
+                    <div class="demo-grid-card text-center" style="padding: var(--spacing-xl) var(--spacing-md);">
+                        <h2 class="title-lg text-muted">No Matches Found</h2>
+                        <p class="text-muted">We couldn't find any items matching your criteria right now.</p>
+                    </div>
+                </div>
+
+                <div th:unless="${matches.empty}" style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                    <div th:each="match, iterStat : ${matches}" th:id="'match-card-' + ${iterStat.index}" class="demo-grid-card" style="cursor: pointer; transition: border-color 0.2s;" th:data-index="${iterStat.index}" onclick="focusMapOn(this.getAttribute('data-index'))">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <h2 style="font-size: 18px; margin: 0 0 4px 0; font-weight: 500;" th:text="${match.name}"></h2>
+                            <span style="background-color: #e6f4ea; color: var(--colors-success); padding: 2px 8px; border-radius: var(--rounded-pill); font-size: 12px; font-weight: 600;" th:text="${match.totalScore + '% Match'}"></span>
+                        </div>
+                        <p class="text-muted" style="font-size: 13px; margin: 0 0 var(--spacing-md) 0;" th:text="${match.description}"></p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm); margin-bottom: var(--spacing-md);">
+                            <div>
+                                <span class="text-muted" style="font-size: 12px; display: block;">Organisation</span>
+                                <span style="font-size: 14px; font-weight: 500; color: var(--colors-ink);" th:text="${match.orgName}"></span>
+                            </div>
+                            <div>
+                                <span class="text-muted" style="font-size: 12px; display: block;">Quantity</span>
+                                <span style="font-size: 14px; font-weight: 500; color: var(--colors-ink);" th:text="${match.quantity + ' ' + match.unit}"></span>
+                            </div>
+                            <div>
+                                <span class="text-muted" style="font-size: 12px; display: block;">Price / Unit</span>
+                                <span style="font-size: 14px; font-weight: 500; color: var(--colors-ink);" th:text="${'₹' + match.pricePerUnit}"></span>
+                            </div>
+                            <div>
+                                <span class="text-muted" style="font-size: 12px; display: block;">Distance</span>
+                                <span style="font-size: 14px; font-weight: 500; color: var(--colors-ink);" th:text="${match.distanceKm + ' km'}"></span>
+                            </div>
+                        </div>
+
+                        <button class="btn button-secondary button-sm" style="width: 100%; border-color: var(--colors-info-border); color: var(--colors-link);" 
+                                th:data-org-name="${match.orgName}" 
+                                th:data-org-contact="${match.orgContact}" 
+                                onclick="event.stopPropagation(); alert('Initiating contact with ' + this.getAttribute('data-org-name') + ' at ' + this.getAttribute('data-org-contact'))">Connect</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Pane: Leaflet Map -->
+        <div id="map" style="flex: 1; height: 100%; width: 100%; z-index: 1;"></div>
+    </div>
+
+    <!-- Hidden data storage for Javascript (formatting decimals explicitly with POINT to avoid local-comma issues, with fallback for null values) -->
+    <div id="source-data" style="display: none;" 
+         th:data-lat="${sourceItem.organisation.latitude != null ? #numbers.formatDecimal(sourceItem.organisation.latitude, 1, 6, 'POINT') : '12.9716'}" 
+         th:data-lng="${sourceItem.organisation.longitude != null ? #numbers.formatDecimal(sourceItem.organisation.longitude, 1, 6, 'POINT') : '77.5946'}"
+         th:data-name="${sourceItem.organisation.name}">
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script th:inline="javascript">
+        var matches = [[${matches}]];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var mapContainer = document.getElementById('map');
+            try {
+                var sourceEl = document.getElementById('source-data');
+                var sLat = parseFloat(sourceEl.getAttribute('data-lat'));
+                var sLng = parseFloat(sourceEl.getAttribute('data-lng'));
+                if (isNaN(sLat)) sLat = 12.9716;
+                if (isNaN(sLng)) sLng = 77.5946;
+                var sName = sourceEl.getAttribute('data-name');
+
+                // Initialize map centered at source
+                var map = L.map('map').setView([sLat, sLng], 12);
+                var markers = [];
+
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                }).addTo(map);
+
+                setTimeout(function() {
+                    map.invalidateSize();
+                }, 200);
+
+                // Source Marker (Red)
+                var redIcon = new L.Icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                });
+                L.marker([sLat, sLng], {icon: redIcon}).addTo(map)
+                    .bindPopup('<b>Your Location</b><br>' + sName).openPopup();
+
+                // Matches Markers (Blue)
+                if (matches && matches.length > 0) {
+                    var bounds = L.latLngBounds([ [sLat, sLng] ]);
+                    
+                    matches.forEach(function(m, index) {
+                        if (m.latitude && m.longitude) {
+                            var marker = L.marker([m.latitude, m.longitude]).addTo(map);
+                            
+                            var popupContent = '<b>' + m.orgName + '</b><br/>' +
+                                               'Match: ' + m.totalScore + '%<br/>' +
+                                               'Distance: ' + m.distanceKm + ' km<br/>' +
+                                               '<button onclick="alert(\'Contact: ' + m.orgContact + '\')" style="margin-top: 8px; cursor:pointer;">Contact</button>';
+                            marker.bindPopup(popupContent);
+                            
+                            // Link marker click to highlight card
+                            marker.on('click', function() {
+                                document.querySelectorAll('.demo-grid-card').forEach(c => c.style.borderColor = 'var(--colors-hairline)');
+                                var card = document.getElementById('match-card-' + index);
+                                if (card) {
+                                    card.style.borderColor = 'var(--colors-info-border)';
+                                    card.scrollIntoView({behavior: 'smooth', block: 'center'});
+                                }
+                            });
+
+                            markers.push(marker);
+                            bounds.extend([m.latitude, m.longitude]);
+                        }
+                    });
+
+                    // Fit bounds to show source and all matches
+                    if (markers.length > 0) {
+                        map.fitBounds(bounds, {padding: [50, 50]});
+                    }
+                }
+
+                // Expose function for cards to focus map
+                window.focusMapOn = function(index) {
+                    var m = matches[index];
+                    if (m && m.latitude && m.longitude) {
+                        map.setView([m.latitude, m.longitude], 14);
+                        markers[index].openPopup();
+                        
+                        document.querySelectorAll('.demo-grid-card').forEach(c => c.style.borderColor = 'var(--colors-hairline)');
+                        document.getElementById('match-card-' + index).style.borderColor = 'var(--colors-info-border)';
+                    }
+                };
+            } catch (err) {
+                console.error("Map initialization failed:", err);
+                mapContainer.innerHTML = '<div style="padding: 24px; color: #c5221f; background-color: #fce8e6; border: 1px solid #fad2cf; margin: 24px; border-radius: 6px; font-family: sans-serif;">' +
+                    '<h3 style="margin-top:0;">Map Integration Offline / Blocked</h3>' +
+                    '<p>There was a problem loading the interactive map elements. If you are offline, ensure your network has access to the internet.</p>' +
+                    '<p style="font-size:12px; font-family:monospace; color:#555; background:#fff; padding:8px; border:1px solid #ddd; border-radius:4px; margin:0;">Error: ' + err.message + '</p></div>';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Dashboard - IME')}"></head>
+<body>
+    <div th:replace="~{layout :: navbar}"></div>
+
+    <div class="hero-band">
+        <div class="container">
+            <div th:if="${param.success}" class="alert alert-success" th:text="${param.success}"></div>
+
+            <h1 class="display-md">Welcome, <span th:text="${orgName}" style="color: var(--colors-signature-coral);"></span></h1>
+            <p class="text-muted" style="font-size: 18px;">Manage your material supply and demands</p>
+        </div>
+    </div>
+
+    <div class="container" style="padding-bottom: var(--spacing-section);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: var(--spacing-xl);">
+            
+            <!-- Supplies Column -->
+            <div class="cream-callout-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-xl);">
+                    <h2 class="title-lg" style="margin: 0;">Your Supplies</h2>
+                    <a th:href="@{/supplies/create}" class="btn button-primary button-sm">Add Supply</a>
+                </div>
+                
+                <div th:if="${supplies.empty}" class="demo-grid-card text-center" style="padding: var(--spacing-xxl) var(--spacing-md);">
+                    <h3 class="title-lg text-muted">No Supplies Yet</h3>
+                    <p class="text-muted">Create your first supply to start finding matches.</p>
+                    <a th:href="@{/supplies/create}" class="btn button-secondary button-sm" style="margin-top: var(--spacing-md);">Create Supply</a>
+                </div>
+                
+                <div th:unless="${supplies.empty}" style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                    <div th:each="supply : ${supplies}" class="demo-grid-card" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 style="margin: 0 0 4px 0; font-size: 16px;" th:text="${supply.name}"></h4>
+                            <p class="text-muted" style="margin: 0; font-size: 14px;" th:text="${supply.quantity + ' ' + supply.unit + ' | ₹' + supply.pricePerUnit + '/' + supply.unit}"></p>
+                        </div>
+                        <div style="display: flex; gap: var(--spacing-xs);">
+                            <a th:href="@{/discover/supply/{id}(id=${supply.id})}" class="btn button-secondary button-sm">Discover</a>
+                            <form th:action="@{/supplies/{id}/delete(id=${supply.id})}" method="post" style="margin: 0;">
+                                <button type="submit" class="btn button-secondary button-sm" style="color: #c5221f;" onclick="return confirm('Delete this supply?')">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demands Column -->
+            <div class="cream-callout-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-xl);">
+                    <h2 class="title-lg" style="margin: 0;">Your Demands</h2>
+                    <a th:href="@{/demands/create}" class="btn button-primary button-sm">Add Demand</a>
+                </div>
+                
+                <div th:if="${demands.empty}" class="demo-grid-card text-center" style="padding: var(--spacing-xxl) var(--spacing-md);">
+                    <h3 class="title-lg text-muted">No Demands Yet</h3>
+                    <p class="text-muted">Create your first demand to start finding matches.</p>
+                    <a th:href="@{/demands/create}" class="btn button-secondary button-sm" style="margin-top: var(--spacing-md);">Create Demand</a>
+                </div>
+                
+                <div th:unless="${demands.empty}" style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                    <div th:each="demand : ${demands}" class="demo-grid-card" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 style="margin: 0 0 4px 0; font-size: 16px;" th:text="${demand.name}"></h4>
+                            <p class="text-muted" style="margin: 0; font-size: 14px;" th:text="${demand.quantity + ' ' + demand.unit + ' | Max: ₹' + demand.pricePerUnit + '/' + demand.unit}"></p>
+                        </div>
+                        <div style="display: flex; gap: var(--spacing-xs);">
+                            <a th:href="@{/discover/demand/{id}(id=${demand.id})}" class="btn button-secondary button-sm">Discover</a>
+                            <form th:action="@{/demands/{id}/delete(id=${demand.id})}" method="post" style="margin: 0;">
+                                <button type="submit" class="btn button-secondary button-sm" style="color: #c5221f;" onclick="return confirm('Delete this demand?')">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

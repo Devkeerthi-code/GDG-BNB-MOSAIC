@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Register - IME')}"></head>
+<body>
+    <div class="container" style="display: flex; justify-content: center; align-items: center; min-height: 100vh; max-width: 600px;">
+        <div class="card" style="width: 100%;">
+            <h1 class="text-center" style="margin-bottom: 0.5rem;">Create an Account</h1>
+            <p class="text-center text-muted" style="margin-bottom: 2rem;">Join the Industrial Material Exchange</p>
+
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <form th:action="@{/register}" th:object="${registerRequest}" method="post">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="name">Organisation Name</label>
+                        <input type="text" id="name" th:field="*{name}" required>
+                        <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color: var(--danger); font-size: 0.75rem;"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contactNumber">Contact Number</label>
+                        <input type="text" id="contactNumber" th:field="*{contactNumber}" required>
+                        <span th:if="${#fields.hasErrors('contactNumber')}" th:errors="*{contactNumber}" style="color: var(--danger); font-size: 0.75rem;"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" th:field="*{password}" required>
+                    <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" style="color: var(--danger); font-size: 0.75rem;"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <textarea id="address" th:field="*{address}" rows="3" required></textarea>
+                    <span th:if="${#fields.hasErrors('address')}" th:errors="*{address}" style="color: var(--danger); font-size: 0.75rem;"></span>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="latitude">Latitude</label>
+                        <input type="number" step="any" id="latitude" th:field="*{latitude}" required>
+                        <span th:if="${#fields.hasErrors('latitude')}" th:errors="*{latitude}" style="color: var(--danger); font-size: 0.75rem;"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="longitude">Longitude</label>
+                        <input type="number" step="any" id="longitude" th:field="*{longitude}" required>
+                        <span th:if="${#fields.hasErrors('longitude')}" th:errors="*{longitude}" style="color: var(--danger); font-size: 0.75rem;"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Register</button>
+            </form>
+            
+            <p class="text-center mt-4">
+                Already have an account? <a th:href="@{/login}" style="color: var(--accent); text-decoration: none;">Sign in here</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

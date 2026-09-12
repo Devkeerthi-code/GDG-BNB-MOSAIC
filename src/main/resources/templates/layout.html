@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">IME</title>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Airtable Theme -->
+    <link rel="stylesheet" th:href="@{/css/airtable-theme.css}">
+    
+    <!-- Leaflet CSS (loaded everywhere just in case, or we can load specifically in discover) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+</head>
+<body>
+    <div th:fragment="navbar">
+        <nav class="top-nav">
+            <a href="/dashboard" class="nav-brand">IME</a>
+            <div class="nav-links">
+                <a href="/dashboard">Dashboard</a>
+            </div>
+            <div class="nav-actions">
+                <form th:action="@{/logout}" method="post" style="display:inline; margin: 0;">
+                    <button type="submit" class="btn button-secondary button-sm">Log out</button>
+                </form>
+            </div>
+        </nav>
+    </div>
+</body>
+</html>

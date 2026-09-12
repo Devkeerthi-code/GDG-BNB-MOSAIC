@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Error - IME')}"></head>
+<body>
+    <div class="container" style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+        <div class="card text-center" style="max-width: 500px; width: 100%;">
+            <h1 style="color: var(--danger); font-size: 4rem; margin-bottom: 0;">Oops!</h1>
+            <h2>Something went wrong</h2>
+            
+            <div th:if="${errorMessage != null or message != null or error != null}" class="alert alert-error" style="margin-top: 2rem;">
+                <p style="margin: 0;" th:if="${errorMessage}" th:text="${errorMessage}"></p>
+                <p style="margin: 0;" th:if="${message != null and errorMessage == null}" th:text="${message}"></p>
+                <p style="margin: 0;" th:if="${error != null and message == null and errorMessage == null}" th:text="${error}"></p>
+            </div>
+            
+            <div th:if="${errorMessage == null and message == null and error == null}" class="alert alert-error" style="margin-top: 2rem;">
+                <p style="margin: 0;">An unexpected error occurred. Please try again or return to the dashboard.</p>
+            </div>
+            
+            <a th:href="@{/dashboard}" class="btn btn-primary mt-4">Return to Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>
