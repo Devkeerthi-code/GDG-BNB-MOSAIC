@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('My Negotiations - IME')}"></head>
+<body>
+    <div th:replace="~{layout :: navbar}"></div>
+
+    <div class="container" style="padding: var(--spacing-xl) 0 var(--spacing-section);">
+        <a th:href="@{/dashboard}" style="font-size: 14px; margin-bottom: var(--spacing-sm); display: inline-block;">← Dashboard</a>
+        <h1 class="title-lg">My Negotiations</h1>
+
+        <div th:if="${negotiations.empty}" class="demo-grid-card text-center" style="padding: var(--spacing-xxl); margin-top: var(--spacing-lg);">
+            <p class="text-muted">No negotiations yet. Find a match on Discover and click Connect.</p>
+        </div>
+
+        <div th:unless="${negotiations.empty}" style="display: flex; flex-direction: column; gap: var(--spacing-md); margin-top: var(--spacing-lg);">
+            <div th:each="n : ${negotiations}" class="demo-grid-card" style="display: flex; justify-content: space-between; align-items: center; gap: var(--spacing-md);">
+                <div>
+                    <h3 style="margin: 0 0 4px 0; font-size: 16px;" th:text="${n.supply.name}"></h3>
+                    <p class="text-muted" style="margin: 0; font-size: 14px;"
+                       th:text="${n.supplierOrg.name + ' ↔ ' + n.demanderOrg.name + ' · ' + n.status}"></p>
+                </div>
+                <a th:href="@{/negotiations/{id}(id=${n.id})}" class="btn button-secondary button-sm">View</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

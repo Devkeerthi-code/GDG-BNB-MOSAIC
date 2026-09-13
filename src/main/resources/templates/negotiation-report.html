@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Deal Report - IME')}"></head>
+<body>
+    <div th:replace="~{layout :: navbar}"></div>
+
+    <div class="container" style="padding: var(--spacing-xl) 0 var(--spacing-section); max-width: 800px;">
+        <a th:href="@{/negotiations/{id}(id=${report.negotiationId})}" style="font-size: 14px; margin-bottom: var(--spacing-sm); display: inline-block;">← Back to negotiation</a>
+
+        <div class="cream-callout-card">
+            <h1 class="title-lg" style="margin: 0 0 8px 0;">Your Deal Report</h1>
+            <p class="text-muted" style="margin: 0 0 var(--spacing-xl) 0;">
+                Prepared for <strong th:text="${report.forOrgName}"></strong> ·
+                Counterpart: <span th:text="${report.counterpartOrgName}"></span>
+            </p>
+
+            <div style="margin-bottom: var(--spacing-lg);">
+                <span class="text-muted" style="font-size: 12px; display: block; margin-bottom: 4px;">Outcome</span>
+                <span class="btn button-secondary button-sm"
+                      th:text="${report.outcome}"
+                      th:style="${report.outcome.name() == 'DEAL_REACHED' ? 'background:#e6f4ea;color:var(--colors-success)' : 'background:#fce8e6;color:#c5221f'}">
+                </span>
+            </div>
+
+            <a th:href="@{/negotiations/{id}/report/download(id=${report.negotiationId})}"
+               class="btn button-secondary button-sm" style="margin-bottom: var(--spacing-lg);">Download report</a>
+
+            <div style="margin-bottom: var(--spacing-lg);">
+                <h2 class="title-lg" style="font-size: 16px; margin: 0 0 8px 0;">Summary</h2>
+                <p style="margin: 0; line-height: 1.6;" th:text="${report.summary}"></p>
+            </div>
+
+            <div style="margin-bottom: var(--spacing-lg);">
+                <h2 class="title-lg" style="font-size: 16px; margin: 0 0 8px 0;">Recommendation</h2>
+                <p style="margin: 0; line-height: 1.6;" th:text="${report.recommendation}"></p>
+            </div>
+
+            <div th:if="${report.dealTerms != null}">
+                <h2 class="title-lg" style="font-size: 16px; margin: 0 0 8px 0;">Agreed Terms</h2>
+                <p style="margin: 0; line-height: 1.6;" th:text="${report.dealTerms}"></p>
+            </div>
+
+            <p class="text-muted" style="font-size: 12px; margin-top: var(--spacing-xl); margin-bottom: 0;"
+                    th:text="${'Generated ' + #temporals.format(report.generatedAt, 'dd MMM yyyy HH:mm')}"></p>
+        </div>
+    </div>
+</body>
+</html>

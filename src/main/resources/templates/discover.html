@@ -53,10 +53,10 @@
                             </div>
                         </div>
 
-                        <button class="btn button-secondary button-sm" style="width: 100%; border-color: var(--colors-info-border); color: var(--colors-link);" 
-                                th:data-org-name="${match.orgName}" 
-                                th:data-org-contact="${match.orgContact}" 
-                                onclick="event.stopPropagation(); alert('Initiating contact with ' + this.getAttribute('data-org-name') + ' at ' + this.getAttribute('data-org-contact'))">Connect</button>
+                        <button class="btn button-secondary button-sm connect-btn" style="width: 100%; border-color: var(--colors-info-border); color: var(--colors-link);"
+                                th:data-supply-id="${sourceType == 'Supply' ? sourceItem.id : match.id}"
+                                th:data-demand-id="${sourceType == 'Demand' ? sourceItem.id : match.id}"
+                                onclick="event.stopPropagation(); startNegotiation(this)">Connect</button>
                     </div>
                 </div>
             </div>
@@ -77,6 +77,32 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <script th:inline="javascript">
         var matches = [[${matches}]];
+
+        async function startNegotiation(btn) {
+            btn.disabled = true;
+            btn.textContent = 'Starting…';
+            try {
+                const res = await fetch('/negotiations/start', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        supplyId: Number(btn.getAttribute('data-supply-id')),
+                        demandId: Number(btn.getAttribute('data-demand-id'))
+                    })
+                });
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(text || 'Failed to start negotiation');
+                }
+                const data = await res.json();
+                window.location.href = '/negotiations/' + data.negotiationId;
+            } catch (err) {
+                alert('Could not start negotiation: ' + err.message);
+                btn.disabled = false;
+                btn.textContent = 'Connect';
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             var mapContainer = document.getElementById('map');

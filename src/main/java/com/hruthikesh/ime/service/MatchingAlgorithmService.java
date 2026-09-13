@@ -31,6 +31,10 @@ public class MatchingAlgorithmService {
         this.supplyRepository = supplyRepository;
     }
 
+    public MatchResponse computeMatchScore(Supply supply, Demand demand) {
+        return calculateScore(supply, demand, true);
+    }
+
     public List<MatchResponse> discoverMatchesForSupply(Supply supply) {
         List<Unit> compatibleUnits = getCompatibleUnits(supply.getUnit());
 

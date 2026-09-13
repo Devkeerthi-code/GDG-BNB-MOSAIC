@@ -90,7 +90,21 @@ spring.jpa.properties.hibernate.format_sql=true
 # JWT Configuration
 jwt.secret=JWT_SECRET
 jwt.expirationMs=86400000
+
+# Groq LLM (AI negotiation agents)
+groq.api.key=${GROQ_API_KEY}
+groq.model=${GROQ_MODEL:openai/gpt-oss-120b}
 ```
+
+Set the `GROQ_API_KEY` environment variable before running (get a key from [console.groq.com](https://console.groq.com/)):
+
+```powershell
+# Windows PowerShell
+$env:GROQ_API_KEY="your-groq-api-key"
+mvnw.cmd spring-boot:run
+```
+
+Optionally set `GROQ_MODEL` to another model available to your Groq account.
 
 ---
 
@@ -123,6 +137,10 @@ Once started, access the application in your browser at:
    - View your posted supplies, demands, and active marketplace status on `/dashboard`.
 4. **Interactive Discovery:**
    - Visit `/discover` to inspect live supply markers on the Leaflet interactive map, view match percentage scores, and connect with verified partners.
+5. **AI Negotiation:**
+   - Click **Connect** on a match to start an agent-to-agent negotiation between supplier and demander organisations.
+   - Watch the live chat transcript on `/negotiations/{id}` while Groq-powered agents negotiate price and quantity.
+   - View your organisation-specific deal report when the negotiation completes.
 
 ---
 
@@ -143,13 +161,13 @@ For quick evaluation, pre-configured organisation accounts are available:
 
 ```
 src/main/java/com/hruthikesh/ime/
-├── controller/         # Web Controllers (Auth, Dashboard, Demand, Supply, Discovery)
+├── controller/         # Web Controllers (Auth, Dashboard, Demand, Supply, Discovery, Negotiation)
 ├── dto/                # Request & Response Transfer Objects
 ├── entity/             # JPA Entities (Organisation, Supply, Demand, Category)
 │   └── enums/          # Status & Unit Enums
 ├── repository/         # Spring Data JPA Repositories
 ├── security/           # Spring Security, JWT Filters & UserDetails
-└── service/            # Business Logic & Matching Algorithm Engine
+└── service/            # Business Logic, Matching Algorithm & AI Negotiation (Groq)
 ```
 
 ---

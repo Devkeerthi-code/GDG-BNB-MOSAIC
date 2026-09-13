@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Negotiation - IME')}"></head>
+<body>
+    <div th:replace="~{layout :: navbar}"></div>
+
+    <div class="container" style="padding: var(--spacing-xl) 0 var(--spacing-section); max-width: 900px;">
+        <a th:href="@{/negotiations}" style="font-size: 14px; margin-bottom: var(--spacing-sm); display: inline-block;">← My Negotiations</a>
+
+        <div class="cream-callout-card" style="margin-bottom: var(--spacing-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--spacing-md);">
+                <div>
+                    <h1 class="title-lg" style="margin: 0 0 8px 0;" th:text="${supply.name}">Item</h1>
+                    <p class="text-muted" style="margin: 0;" th:text="${supplierOrg.name + ' ↔ ' + demanderOrg.name}"></p>
+                </div>
+                <span id="status-badge" class="btn button-secondary button-sm"
+                      th:text="${negotiation.status}"
+                        th:style="${negotiation.status.name() == 'DEAL_REACHED' ?
+                               'background:#e6f4ea;color:var(--colors-success);border-color:#ceead6' :
+                               (negotiation.status.name() == 'NO_DEAL' or negotiation.status.name() == 'FAILED' ?
+                               'background:#fce8e6;color:#c5221f;border-color:#fad2cf' :
+                               'background:#e8f0fe;color:var(--colors-link);border-color:var(--colors-info-border)')}">
+                </span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-top: var(--spacing-lg);">
+                <div class="demo-grid-card">
+                    <span class="text-muted" style="font-size: 12px;">Supply</span>
+                    <p style="margin: 4px 0 0;" th:text="${supply.quantity + ' ' + supply.unit + ' @ ₹' + supply.pricePerUnit}"></p>
+                </div>
+                <div class="demo-grid-card">
+                    <span class="text-muted" style="font-size: 12px;">Demand</span>
+                    <p style="margin: 4px 0 0;" th:text="${demand.quantity + ' ' + demand.unit + ' @ max ₹' + demand.pricePerUnit}"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="cream-callout-card">
+            <h2 class="title-lg" style="margin: 0 0 var(--spacing-md) 0;">Agent Negotiation</h2>
+            <p class="text-muted" style="margin: 0 0 var(--spacing-lg) 0;">
+                Round <span id="current-round" th:text="${negotiation.currentRound}">0</span>
+                of <span id="max-rounds" th:text="${negotiation.maxRounds}">3</span>
+            </p>
+
+            <div id="failure-message" th:if="${negotiation.failureReason != null}"
+                 th:text="${negotiation.failureReason}"
+                 style="margin-bottom: var(--spacing-md); padding: 12px 14px; color: #c5221f; background: #fce8e6; border: 1px solid #fad2cf; border-radius: var(--rounded-md);">
+            </div>
+
+            <div id="chat-panel" style="display: flex; flex-direction: column; gap: var(--spacing-md); min-height: 320px; max-height: 520px; overflow-y: auto; padding: var(--spacing-md); background: var(--colors-surface-soft); border-radius: var(--rounded-md); border: 1px solid var(--colors-hairline);">
+                <p id="chat-empty" class="text-muted text-center" style="margin: auto;">Waiting for agents to begin negotiating…</p>
+            </div>
+
+            <div id="report-section" style="margin-top: var(--spacing-lg); display: none;">
+                <a th:href="@{/negotiations/{id}/report(id=${negotiation.id})}" class="btn button-primary">View my report</a>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const negotiationId = [[${negotiation.id}]];
+        const supplierOrgId = [[${supplierOrg.id}]];
+        const currentOrgId = [[${currentOrgId}]];
+        let pollTimer = null;
+        let renderedTurnCount = 0;
+
+        function isTerminal(status) {
+            return status === 'DEAL_REACHED' || status === 'NO_DEAL' || status === 'FAILED';
+        }
+
+        function renderTurn(turn) {
+            const panel = document.getElementById('chat-panel');
+            const empty = document.getElementById('chat-empty');
+            if (empty) empty.remove();
+
+            const isSupplier = turn.agentRole === 'SUPPLIER_AGENT';
+            const alignSelf = isSupplier ? 'flex-start' : 'flex-end';
+            const bg = isSupplier ? 'var(--colors-canvas)' : '#e8f0fe';
+
+            const bubble = document.createElement('div');
+            bubble.style.cssText = 'max-width: 78%; align-self: ' + alignSelf + '; background: ' + bg + '; border: 1px solid var(--colors-hairline); border-radius: 12px; padding: 12px 14px;';
+            bubble.innerHTML =
+                '<div style="font-size: 12px; font-weight: 600; color: var(--colors-link); margin-bottom: 4px;">' +
+                turn.speakingForOrgName + ' · Round ' + turn.roundNumber + '</div>' +
+                '<div style="font-size: 14px; line-height: 1.5; color: var(--colors-ink);">' + escapeHtml(turn.message) + '</div>' +
+                (turn.proposedPricePerUnit != null ?
+                    '<div style="font-size: 12px; margin-top: 8px; color: var(--colors-muted);">Proposed: ₹' +
+                    turn.proposedPricePerUnit + ' / unit · Qty ' + turn.proposedQuantity + ' · ' + turn.decision + '</div>' : '');
+
+            panel.appendChild(bubble);
+            panel.scrollTop = panel.scrollHeight;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, function(m) {
+                return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m];
+            });
+        }
+
+        function updateStatusBadge(status) {
+            const badge = document.getElementById('status-badge');
+            badge.textContent = status.replace('_', ' ');
+            if (status === 'DEAL_REACHED') {
+                badge.style.cssText = 'background:#e6f4ea;color:var(--colors-success);border-color:#ceead6';
+            } else if (status === 'NO_DEAL' || status === 'FAILED') {
+                badge.style.cssText = 'background:#fce8e6;color:#c5221f;border-color:#fad2cf';
+            } else {
+                badge.style.cssText = 'background:#e8f0fe;color:var(--colors-link);border-color:var(--colors-info-border)';
+            }
+        }
+
+        async function pollStatus() {
+            try {
+                const res = await fetch('/negotiations/' + negotiationId + '/status', { credentials: 'same-origin' });
+                if (!res.ok) {
+                    throw new Error('Status request failed (' + res.status + ')');
+                }
+                const data = await res.json();
+
+                document.getElementById('current-round').textContent = data.currentRound;
+                updateStatusBadge(data.status);
+
+                if (data.turns && data.turns.length > renderedTurnCount) {
+                    for (let i = renderedTurnCount; i < data.turns.length; i++) {
+                        renderTurn(data.turns[i]);
+                    }
+                    renderedTurnCount = data.turns.length;
+                }
+
+                if (data.reportAvailable) {
+                    document.getElementById('report-section').style.display = 'block';
+                }
+
+                if (data.failureReason) {
+                    let failureMessage = document.getElementById('failure-message');
+                    if (!failureMessage) {
+                        failureMessage = document.createElement('div');
+                        failureMessage.id = 'failure-message';
+                        failureMessage.style.cssText = 'margin-bottom: var(--spacing-md); padding: 12px 14px; color: #c5221f; background: #fce8e6; border: 1px solid #fad2cf; border-radius: var(--rounded-md);';
+                        document.getElementById('chat-panel').before(failureMessage);
+                    }
+                    failureMessage.textContent = data.failureReason;
+                }
+
+                if (isTerminal(data.status) && data.reportAvailable) {
+                    clearInterval(pollTimer);
+                }
+            } catch (e) {
+                console.error('Poll failed', e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            pollStatus();
+            pollTimer = setInterval(pollStatus, 1800);
+        });
+    </script>
+</body>
+</html>
